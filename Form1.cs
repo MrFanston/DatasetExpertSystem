@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -21,6 +22,7 @@ namespace DatasetExpertSystem
         DataTable dt;
         int columnIndex = 0;
         List<string> listFinalClasses; // Классы целевого столбца
+        bool currentClassType; // Текущее значение аргументов строки(false) или числа(true)
 
         private void buttonReadDataset_Click(object sender, EventArgs e)
         {
@@ -60,16 +62,16 @@ namespace DatasetExpertSystem
             firstStartDataset();
 
             comboBoxVariable.Enabled = true;
+            numericUpDownValue.Enabled = true;
             buttonAnswer.Enabled = true;
         }
 
         private List<string> CreateListVariable(DataTable dataTable, int col)
         {
             List<string> listVariable = new List<string>();
-
-            foreach(DataRow row in dataTable.Rows)
+            foreach (DataRow row in dataTable.Rows)
             {
-                if (!listVariable.Contains( row[col].ToString() ))
+                if (!listVariable.Contains(row[col].ToString()))
                 {
                     listVariable.Add(row[col].ToString());
                 }
@@ -81,14 +83,39 @@ namespace DatasetExpertSystem
         {
             List<string> listVariableColumns = CreateListVariable(dt, columnIndex);
 
-            comboBoxVariable.Items.AddRange(listVariableColumns.ToArray());
-            labelColumn.Text = dt.Columns[columnIndex].ToString();
-
-            Dictionary<string, int> dictionary = searchAbsoluteChanceOneColumn(dt.Columns.Count - 1);
-
-            foreach (var item in dictionary)
+            if (numericValue(listVariableColumns[0]))
             {
-                dataGridViewChance.Rows.Add(item.Key, (float)item.Value / dt.Rows.Count);
+                comboBoxVariable.Visible = false;
+                numericUpDownValue.Visible = true;
+                labelMin.Visible = true;
+                labelMax.Visible = true;
+                labelColumn.Text = dt.Columns[columnIndex].ToString();
+                Dictionary<string, int> dictionary = searchAbsoluteChanceOneColumn(dt.Columns.Count - 1);
+
+                foreach (var item in dictionary)
+                {
+                    dataGridViewChance.Rows.Add(item.Key, (float)item.Value / dt.Rows.Count);
+                }
+                
+                currentClassType = true;
+            }
+            else
+            {
+                comboBoxVariable.Visible = true;
+                numericUpDownValue.Visible = false;
+                labelMin.Visible = false;
+                labelMax.Visible = false;
+                comboBoxVariable.Items.AddRange(listVariableColumns.ToArray());
+                labelColumn.Text = dt.Columns[columnIndex].ToString();
+
+                Dictionary<string, int> dictionary = searchAbsoluteChanceOneColumn(dt.Columns.Count - 1);
+
+                foreach (var item in dictionary)
+                {
+                    dataGridViewChance.Rows.Add(item.Key, (float)item.Value / dt.Rows.Count);
+                }
+                
+                currentClassType = false;
             }
         }
 
@@ -148,12 +175,38 @@ namespace DatasetExpertSystem
         private void buttonAnswer_Click(object sender, EventArgs e)
         {
             // Ключ - целевой класс, значение - вероятность принадлежности параметра к целевому классу
-            Dictionary<string, float> dictionaryChance;
+            Dictionary<string, float> dictionaryChance = new Dictionary<string, float>();
 
-            string parametr = comboBoxVariable.SelectedItem.ToString();
+            // Работаем с вероятностиями чисел или строк
+            if(currentClassType)
+            {
+                float selectedValue = (float)numericUpDownValue.Value;
 
-            dictionaryChance = searchChanceColumnWithFinal(columnIndex, parametr);
-            
+                foreach (DataGridViewRow rowFinal in dataGridViewChance.Rows)
+                {
+                    // Составляем список всех значений аргумента, которым соответствует текущий целевой класс
+                    List<string> listVariableColumns = new List<string>();
+                    foreach ( DataRow row in dt.Rows)
+                    {
+                        if(rowFinal.Cells[0].Value.ToString() == row[dt.Columns.Count - 1].ToString())
+                        {
+                            listVariableColumns.Add(row[columnIndex].ToString());
+                        }
+                    }
+
+                    // Считаем априорную вероятность аргумента по списку значений
+                    float chance = generateAnswerForFloat(listVariableColumns, selectedValue);
+
+                    dictionaryChance.Add(rowFinal.Cells[0].Value.ToString(), chance);
+                }
+            }
+            else
+            {
+                string parametr = comboBoxVariable.SelectedItem.ToString();
+
+                dictionaryChance = searchChanceColumnWithFinal(columnIndex, parametr);
+            }
+
             // Вероятность параметра
             float chanceParam = 0;
             foreach (DataGridViewRow row in dataGridViewChance.Rows)
@@ -169,7 +222,7 @@ namespace DatasetExpertSystem
                     {
                         // Вероятность целевого класса
                         float chanceFinal = (float)row.Cells[1].Value;
-                        
+
                         // Вероятность параметра при условии того, что он принадлежит целевому классу
                         float chanceParamWithFinal = dictionaryChance[key];
 
@@ -185,6 +238,7 @@ namespace DatasetExpertSystem
                 }
             }
 
+            //Проверка на конец колонок
             if (++columnIndex < dt.Columns.Count - 1)
             {
                 List<string> listVariableColumns = CreateListVariable(dt, columnIndex);
@@ -196,10 +250,40 @@ namespace DatasetExpertSystem
                 comboBoxVariable.SelectedItem = null;
                 comboBoxVariable.Text = string.Empty;
 
+                // Узнаем какие по типу аргументы в следующей колонке
+                if (numericValue((string)dt.Rows[0][columnIndex]))
+                {
+                    comboBoxVariable.Visible = false;
+                    numericUpDownValue.Visible = true;
+                    labelColumn.Text = dt.Columns[columnIndex].ToString();
+                    currentClassType = true;
+                    labelMin.Visible = true;
+                    labelMax.Visible = true;
+
+                    List<float> listValue = new List<float>();
+                    foreach (string str in CreateListVariable(dt, columnIndex))
+                    {
+                        listValue.Add(float.Parse(str, CultureInfo.InvariantCulture));
+                    }
+
+                    labelMin.Text = "От " + listValue.Min().ToString();
+                    labelMax.Text = "До " + listValue.Max().ToString();
+                    
+                }
+                else
+                {
+                    comboBoxVariable.Visible = true;
+                    numericUpDownValue.Visible = false;
+                    currentClassType = false;
+                    labelMin.Visible = false;
+                    labelMax.Visible = false;
+                }
+
             }
             else
             {
                 comboBoxVariable.Enabled = false;
+                numericUpDownValue.Enabled = false;
                 buttonAnswer.Enabled = false;
                 float maxChance = -1;
                 string classMaxChance = "";
@@ -213,6 +297,42 @@ namespace DatasetExpertSystem
                 }
                 labelMaxChanceAnswer.Text = classMaxChance;
             }
+        }
+
+        private bool numericValue(string value)
+        {
+            return float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float result);
+        }
+
+        private float generateAnswerForFloat(List<string> listVariableColumns, float selectedValue)
+        {
+            /*
+            // Вычисляем значения сглаженной эмпирической функции распределения
+            Assessment.SmoothedRandomVariable sdf;
+            List<decimal> array = new List<decimal>();
+
+            foreach(string value in listVariableColumns)
+            {
+                array.Add(Convert.ToDecimal(value, CultureInfo.InvariantCulture));
+            }
+            sdf = new Assessment.SmoothedRandomVariable(array, 0.1M);
+            decimal answer = sdf.pdf((decimal)selectedValue);
+
+            return (float)answer;
+
+            */
+
+            List<decimal> array = new List<decimal>();
+            foreach (string value in listVariableColumns)
+            {
+                array.Add(Convert.ToDecimal(value, CultureInfo.InvariantCulture));
+            }
+            array.Sort();
+
+            Assessment.Histogram hist = new Assessment.Histogram(array, (int)(1 + Math.Log(array.Count())));
+
+            return (float)hist.Value((decimal)selectedValue);
+
         }
 
     }

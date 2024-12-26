@@ -39,7 +39,11 @@
             this.ColumnChance = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.labelMaxChance = new System.Windows.Forms.Label();
             this.labelMaxChanceAnswer = new System.Windows.Forms.Label();
+            this.numericUpDownValue = new System.Windows.Forms.NumericUpDown();
+            this.labelMin = new System.Windows.Forms.Label();
+            this.labelMax = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewChance)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownValue)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonReadDataset
@@ -72,7 +76,7 @@
             // 
             this.labelAnswer.AutoSize = true;
             this.labelAnswer.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelAnswer.Location = new System.Drawing.Point(12, 60);
+            this.labelAnswer.Location = new System.Drawing.Point(12, 43);
             this.labelAnswer.Name = "labelAnswer";
             this.labelAnswer.Size = new System.Drawing.Size(206, 17);
             this.labelAnswer.TabIndex = 3;
@@ -82,7 +86,7 @@
             // 
             this.labelColumn.AutoSize = true;
             this.labelColumn.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelColumn.Location = new System.Drawing.Point(12, 88);
+            this.labelColumn.Location = new System.Drawing.Point(12, 70);
             this.labelColumn.Name = "labelColumn";
             this.labelColumn.Size = new System.Drawing.Size(23, 17);
             this.labelColumn.TabIndex = 4;
@@ -148,11 +152,54 @@
             this.labelMaxChanceAnswer.Size = new System.Drawing.Size(0, 17);
             this.labelMaxChanceAnswer.TabIndex = 8;
             // 
+            // numericUpDownValue
+            // 
+            this.numericUpDownValue.DecimalPlaces = 3;
+            this.numericUpDownValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.numericUpDownValue.Location = new System.Drawing.Point(15, 123);
+            this.numericUpDownValue.Maximum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            0});
+            this.numericUpDownValue.Minimum = new decimal(new int[] {
+            100000,
+            0,
+            0,
+            -2147483648});
+            this.numericUpDownValue.Name = "numericUpDownValue";
+            this.numericUpDownValue.Size = new System.Drawing.Size(120, 23);
+            this.numericUpDownValue.TabIndex = 9;
+            this.numericUpDownValue.Visible = false;
+            // 
+            // labelMin
+            // 
+            this.labelMin.AutoSize = true;
+            this.labelMin.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelMin.Location = new System.Drawing.Point(12, 96);
+            this.labelMin.Name = "labelMin";
+            this.labelMin.Size = new System.Drawing.Size(26, 17);
+            this.labelMin.TabIndex = 10;
+            this.labelMin.Text = "От";
+            // 
+            // labelMax
+            // 
+            this.labelMax.AutoSize = true;
+            this.labelMax.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelMax.Location = new System.Drawing.Point(139, 96);
+            this.labelMax.Name = "labelMax";
+            this.labelMax.Size = new System.Drawing.Size(27, 17);
+            this.labelMax.TabIndex = 11;
+            this.labelMax.Text = "До";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(503, 203);
+            this.Controls.Add(this.labelMax);
+            this.Controls.Add(this.labelMin);
+            this.Controls.Add(this.numericUpDownValue);
             this.Controls.Add(this.labelMaxChanceAnswer);
             this.Controls.Add(this.labelMaxChance);
             this.Controls.Add(this.dataGridViewChance);
@@ -166,6 +213,7 @@
             this.Name = "Form1";
             this.Text = "Экспертная система";
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewChance)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownValue)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -183,6 +231,9 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn ColumnChance;
         private System.Windows.Forms.Label labelMaxChance;
         private System.Windows.Forms.Label labelMaxChanceAnswer;
+        private System.Windows.Forms.NumericUpDown numericUpDownValue;
+        private System.Windows.Forms.Label labelMin;
+        private System.Windows.Forms.Label labelMax;
     }
 }
 
